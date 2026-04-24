@@ -3,106 +3,115 @@ import "./styles/index.css";
 import "./App.css";
 
 function App() {
-  const [health, setHealth] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [serverReady, setServerReady] = useState(null);
+  const [checking, setChecking] = useState(true);
 
-  // Ping the backend health endpoint to confirm the server is up
   useEffect(() => {
     fetch("/api/health")
       .then((res) => res.json())
-      .then((data) => {
-        setHealth(data);
-        setLoading(false);
+      .then(() => {
+        setServerReady(true);
+        setChecking(false);
       })
       .catch(() => {
-        setHealth(null);
-        setLoading(false);
+        setServerReady(false);
+        setChecking(false);
       });
   }, []);
 
   return (
     <div className="app-container">
-      {/* Header */}
+
+      {/* Top navigation bar */}
       <header className="app-header glass">
         <div className="logo">
           <span className="logo-icon">◈</span>
           <span className="logo-text gradient-text">SocialSphere</span>
         </div>
-        <div className="header-badge">Day 1 — Foundation</div>
+        <div className="header-actions">
+          <button className="btn-ghost">Log in</button>
+          <button className="btn-primary">Join now</button>
+        </div>
       </header>
 
-      {/* Hero */}
+      {/* Main hero section */}
       <main className="hero">
-        <div className="hero-tag">🚀 MERN Stack · Socket.IO · Redis</div>
+
+        {/* Tag line */}
+        <div className="hero-tag">✨ Connect · Share · Discover</div>
+
+        {/* Headline */}
         <h1 className="hero-title">
-          Your Social Platform,
+          A place to share your
           <br />
-          <span className="gradient-text">Built from Scratch.</span>
+          <span className="gradient-text">story with the world.</span>
         </h1>
+
+        {/* Short description */}
         <p className="hero-subtitle">
-          A full-stack social media dashboard with real-time messaging,
-          media uploads, follow system, and engagement analytics.
+          Post photos, chat with friends, follow people you love,
+          and see what's happening around you — all in one place.
         </p>
 
-        {/* Server Status Card */}
-        <div className="status-card card">
-          <div className="status-header">
-            <span className="status-label">Backend Status</span>
-            <span
-              className={`status-dot ${
-                loading ? "dot-loading" : health ? "dot-online" : "dot-offline"
-              }`}
-            />
+        {/* Call-to-action buttons */}
+        <div className="cta-group">
+          <button className="btn-primary btn-lg">Get started — it's free</button>
+          <button className="btn-outline btn-lg">See how it works</button>
+        </div>
+
+        {/* Live server status — kept minimal, not technical */}
+        <div className="status-pill">
+          {checking && (
+            <>
+              <span className="status-dot dot-loading" />
+              <span>Setting things up…</span>
+            </>
+          )}
+          {!checking && serverReady && (
+            <>
+              <span className="status-dot dot-online" />
+              <span>Everything is up and running</span>
+            </>
+          )}
+          {!checking && !serverReady && (
+            <>
+              <span className="status-dot dot-offline" />
+              <span>Having trouble connecting — please try again shortly</span>
+            </>
+          )}
+        </div>
+
+        {/* Feature highlights */}
+        <div className="features-grid">
+          <div className="feature-card card">
+            <span className="feature-icon">📸</span>
+            <h3>Share photos & videos</h3>
+            <p>Post what's on your mind. Add a caption, tag friends, and share the moment.</p>
           </div>
-
-          {loading && <p className="status-text muted">Connecting to server...</p>}
-
-          {!loading && health && (
-            <div className="status-grid">
-              <div className="status-item">
-                <span className="item-label">Status</span>
-                <span className="item-value online">✓ {health.status}</span>
-              </div>
-              <div className="status-item">
-                <span className="item-label">Uptime</span>
-                <span className="item-value">{health.uptime}</span>
-              </div>
-              <div className="status-item">
-                <span className="item-label">Environment</span>
-                <span className="item-value">{health.environment}</span>
-              </div>
-              <div className="status-item">
-                <span className="item-label">Timestamp</span>
-                <span className="item-value">
-                  {new Date(health.timestamp).toLocaleTimeString()}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {!loading && !health && (
-            <p className="status-text danger">
-              ✗ Could not reach the server. Make sure the backend is running on port 5000.
-            </p>
-          )}
+          <div className="feature-card card">
+            <span className="feature-icon">💬</span>
+            <h3>Chat with friends</h3>
+            <p>Send messages instantly. Your conversations happen in real time.</p>
+          </div>
+          <div className="feature-card card">
+            <span className="feature-icon">📊</span>
+            <h3>See your activity</h3>
+            <p>Find out who's liking your posts, following you, and engaging with your content.</p>
+          </div>
+          <div className="feature-card card">
+            <span className="feature-icon">🔔</span>
+            <h3>Never miss a moment</h3>
+            <p>Get notified the second something interesting happens on your profile.</p>
+          </div>
         </div>
 
-        {/* Tech badges */}
-        <div className="tech-badges">
-          {["React", "Node.js", "Express", "MongoDB", "Socket.IO", "Redis"].map(
-            (tech) => (
-              <span key={tech} className="badge">
-                {tech}
-              </span>
-            )
-          )}
-        </div>
       </main>
 
       {/* Footer */}
       <footer className="app-footer">
-        <span className="muted">Day 1 of 7 complete · 5 commits</span>
+        <span className="muted">Made with ❤️ · SocialSphere © 2025</span>
       </footer>
+
     </div>
   );
 }
