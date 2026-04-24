@@ -1,122 +1,110 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from "react";
+import "./styles/index.css";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [health, setHealth] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Ping the backend health endpoint to confirm the server is up
+  useEffect(() => {
+    fetch("/api/health")
+      .then((res) => res.json())
+      .then((data) => {
+        setHealth(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setHealth(null);
+        setLoading(false);
+      });
+  }, []);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="app-container">
+      {/* Header */}
+      <header className="app-header glass">
+        <div className="logo">
+          <span className="logo-icon">◈</span>
+          <span className="logo-text gradient-text">SocialSphere</span>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+        <div className="header-badge">Day 1 — Foundation</div>
+      </header>
 
-      <div className="ticks"></div>
+      {/* Hero */}
+      <main className="hero">
+        <div className="hero-tag">🚀 MERN Stack · Socket.IO · Redis</div>
+        <h1 className="hero-title">
+          Your Social Platform,
+          <br />
+          <span className="gradient-text">Built from Scratch.</span>
+        </h1>
+        <p className="hero-subtitle">
+          A full-stack social media dashboard with real-time messaging,
+          media uploads, follow system, and engagement analytics.
+        </p>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        {/* Server Status Card */}
+        <div className="status-card card">
+          <div className="status-header">
+            <span className="status-label">Backend Status</span>
+            <span
+              className={`status-dot ${
+                loading ? "dot-loading" : health ? "dot-online" : "dot-offline"
+              }`}
+            />
+          </div>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+          {loading && <p className="status-text muted">Connecting to server...</p>}
+
+          {!loading && health && (
+            <div className="status-grid">
+              <div className="status-item">
+                <span className="item-label">Status</span>
+                <span className="item-value online">✓ {health.status}</span>
+              </div>
+              <div className="status-item">
+                <span className="item-label">Uptime</span>
+                <span className="item-value">{health.uptime}</span>
+              </div>
+              <div className="status-item">
+                <span className="item-label">Environment</span>
+                <span className="item-value">{health.environment}</span>
+              </div>
+              <div className="status-item">
+                <span className="item-label">Timestamp</span>
+                <span className="item-value">
+                  {new Date(health.timestamp).toLocaleTimeString()}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {!loading && !health && (
+            <p className="status-text danger">
+              ✗ Could not reach the server. Make sure the backend is running on port 5000.
+            </p>
+          )}
+        </div>
+
+        {/* Tech badges */}
+        <div className="tech-badges">
+          {["React", "Node.js", "Express", "MongoDB", "Socket.IO", "Redis"].map(
+            (tech) => (
+              <span key={tech} className="badge">
+                {tech}
+              </span>
+            )
+          )}
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="app-footer">
+        <span className="muted">Day 1 of 7 complete · 5 commits</span>
+      </footer>
+    </div>
+  );
 }
 
-export default App
+export default App;
