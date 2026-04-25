@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import { errorHandler } from "./middleware/errorHandler.js";
+import authRoutes from "./routes/auth.routes.js";
 
 const app = express();
 
@@ -29,8 +30,8 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// All routes will be mounted here in future days
-// app.use("/api/v1/auth", authRoutes);
+// Routes
+app.use("/api/v1/auth", authRoutes);
 
 // Global error handler — must be the last middleware
 app.use(errorHandler);
