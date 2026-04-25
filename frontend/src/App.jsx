@@ -1,119 +1,59 @@
-import { useState, useEffect } from "react";
-import "./styles/index.css";
-import "./App.css";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext.jsx";
 
-function App() {
-  const [serverReady, setServerReady] = useState(null);
-  const [checking, setChecking] = useState(true);
+import LandingPage from "./pages/LandingPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
+import HomePage from "./pages/HomePage.jsx";
 
-  useEffect(() => {
-    fetch("/api/health")
-      .then((res) => res.json())
-      .then(() => {
-        setServerReady(true);
-        setChecking(false);
-      })
-      .catch(() => {
-        setServerReady(false);
-        setChecking(false);
-      });
-  }, []);
-
-  return (
-    <div className="app-container">
-
-      {/* Top navigation bar */}
-      <header className="app-header glass">
-        <div className="logo">
-          <span className="logo-icon">◈</span>
-          <span className="logo-text gradient-text">SocialSphere</span>
-        </div>
-        <div className="header-actions">
-          <button className="btn-ghost">Log in</button>
-          <button className="btn-primary">Join now</button>
-        </div>
-      </header>
-
-      {/* Main hero section */}
-      <main className="hero">
-
-        {/* Tag line */}
-        <div className="hero-tag">✨ Connect · Share · Discover</div>
-
-        {/* Headline */}
-        <h1 className="hero-title">
-          A place to share your
-          <br />
-          <span className="gradient-text">story with the world.</span>
-        </h1>
-
-        {/* Short description */}
-        <p className="hero-subtitle">
-          Post photos, chat with friends, follow people you love,
-          and see what's happening around you — all in one place.
-        </p>
-
-        {/* Call-to-action buttons */}
-        <div className="cta-group">
-          <button className="btn-primary btn-lg">Get started — it's free</button>
-          <button className="btn-outline btn-lg">See how it works</button>
-        </div>
-
-        {/* Live server status — kept minimal, not technical */}
-        <div className="status-pill">
-          {checking && (
-            <>
-              <span className="status-dot dot-loading" />
-              <span>Setting things up…</span>
-            </>
-          )}
-          {!checking && serverReady && (
-            <>
-              <span className="status-dot dot-online" />
-              <span>Everything is up and running</span>
-            </>
-          )}
-          {!checking && !serverReady && (
-            <>
-              <span className="status-dot dot-offline" />
-              <span>Having trouble connecting — please try again shortly</span>
-            </>
-          )}
-        </div>
-
-        {/* Feature highlights */}
-        <div className="features-grid">
-          <div className="feature-card card">
-            <span className="feature-icon">📸</span>
-            <h3>Share photos & videos</h3>
-            <p>Post what's on your mind. Add a caption, tag friends, and share the moment.</p>
-          </div>
-          <div className="feature-card card">
-            <span className="feature-icon">💬</span>
-            <h3>Chat with friends</h3>
-            <p>Send messages instantly. Your conversations happen in real time.</p>
-          </div>
-          <div className="feature-card card">
-            <span className="feature-icon">📊</span>
-            <h3>See your activity</h3>
-            <p>Find out who's liking your posts, following you, and engaging with your content.</p>
-          </div>
-          <div className="feature-card card">
-            <span className="feature-icon">🔔</span>
-            <h3>Never miss a moment</h3>
-            <p>Get notified the second something interesting happens on your profile.</p>
-          </div>
-        </div>
-
-      </main>
-
-      {/* Footer */}
-      <footer className="app-footer">
-        <span className="muted">Made with ❤️ · SocialSphere © 2025</span>
-      </footer>
-
-    </div>
-  );
+// Redirects logged-in users away from auth pages
+function PublicRoute({ children }) {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return null;
+  return isAuthenticated ? <Navigate to="/home" replace /> : children;
 }
 
-export default App;
+// Redirects logged-out users away from protected pages
+function PrivateRoute({ children }) {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return null;
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <LoginPage />
+          </PublicRoute>
+        }
+      />
+
+      <Route
+        path="/register"
+        element={
+          <PublicRoute>
+            <RegisterPage />
+          </PublicRoute>
+        }
+      />
+
+      <Route
+        path="/home"
+        element={
+          <PrivateRoute>
+            <HomePage />
+          </PrivateRoute>
+        }
+      />
+
+      {/* Catch-all: send unknown URLs back to the landing page */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
