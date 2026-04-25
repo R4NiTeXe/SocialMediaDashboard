@@ -144,6 +144,8 @@ img {
   font-size: 14px;
   font-weight: 600;
   transition: var(--transition);
+  cursor: pointer;
+  user-select: none;
 }
 .btn-primary:hover {
   background: var(--accent-hover);

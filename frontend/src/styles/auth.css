@@ -36,6 +36,7 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 60px;
+  cursor: pointer;
 }
 
 .brand-logo-icon {
@@ -141,8 +142,14 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+}
+
+.label-hint {
+  font-weight: 400;
+  color: var(--text-faint);
+  font-size: 12px;
 }
 
 .form-input {
@@ -156,6 +163,7 @@
   font-family: inherit;
   outline: none;
   transition: var(--transition);
+  cursor: text;
 }
 
 .form-input:focus {
@@ -247,6 +255,7 @@
   color: var(--accent-light);
   font-weight: 600;
   transition: var(--transition);
+  cursor: pointer;
 }
 
 .auth-switch a:hover {

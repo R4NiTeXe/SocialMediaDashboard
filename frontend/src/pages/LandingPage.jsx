@@ -108,7 +108,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="app-footer">
-        <span className="muted">Made with ❤️ · SocialSphere © 2025</span>
+        <span className="muted">Made with ❤️ · SocialSphere © 2026</span>
       </footer>
     </div>
   );

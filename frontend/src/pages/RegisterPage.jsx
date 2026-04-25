@@ -140,7 +140,7 @@ export default function RegisterPage() {
 
             <div className="form-group">
               <label className="form-label" htmlFor="password">
-                Password <span style={{ color: "var(--text-faint)", fontWeight: 400 }}>(min. 6 characters)</span>
+                Password <span className="label-hint">(at least 6 characters)</span>
               </label>
               <input
                 id="password"
