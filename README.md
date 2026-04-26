@@ -1,22 +1,27 @@
-# SocialSphere: Full-Stack Social Engineering
+# SocialSphere: Social Media Application
 
-A comprehensive social media platform built with focus on high-performance real-time interactions, data-driven insights, and a polished, professional-grade user experience. 
+A comprehensive social media platform built with focus on high-performance real-time interactions, data-driven insights, and a polished, professional-grade user experience.
 
 SocialSphere is a full-stack application developed using the MERN stack (MongoDB, Express, React, Node.js) with a heavy emphasis on architectural clean code, real-time communication, and visual analytics.
+
 
 ## Core Architecture
 
 The project follows a standard monorepo structure, separating concerns between a robust Node.js backend and a highly responsive React frontend.
 
 ### Backend (Node.js & Express)
+
 The backend is architected for scalability and maintainability, utilizing an MVC-like pattern for clear separation of logic:
+
 - **Authentication**: Implemented using JWT (JSON Web Tokens) with a dual-token strategy (Access & Refresh tokens) and httpOnly cookies to mitigate XSS and CSRF risks.
 - **Real-time Engine**: Built on Socket.IO for instant messaging, real-time notifications, and live engagement updates.
 - **Data Modeling**: Mongoose schemas are optimized for relational-style social interactions (follows, likes, threaded comments) while maintaining MongoDB's flexibility.
 - **Middleware Architecture**: Utilizes global error handling, file-upload processing (Multer), and multi-layered request validation.
 
 ### Frontend (React & Vite)
+
 The client-side experience is built for speed and visual excellence:
+
 - **State Management**: Built on React Context API for lightweight, efficient state synchronization across the auth lifecycle.
 - **Design System**: A custom-built CSS design system featuring premium glassmorphism, responsive layouts, and a high-contrast Bright Mode toggle.
 - **Data Visualization**: Integrated Recharts for rendering complex user activity and engagement metrics.
@@ -44,7 +49,7 @@ social-media-dashboard/
     │   ├── pages/          # Full-page view components
     │   ├── styles/         # Global design system (CSS variables)
     │   └── App.jsx         # Main routing and guard logic
-    └── public/             # Static assets
+    └── public/             # Static assets and screenshots
 ```
 
 ## Design Philosophy
@@ -75,6 +80,7 @@ CORS_ORIGIN=http://localhost:5173
 ## Getting Started
 
 ### 1. Backend Setup
+
 ```bash
 cd backend
 npm install
@@ -82,6 +88,7 @@ npm run dev
 ```
 
 ### 2. Frontend Setup
+
 ```bash
 cd frontend
 npm install
