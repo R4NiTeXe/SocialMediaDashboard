@@ -1,10 +1,31 @@
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { getFeed } from "../api/posts.api";
 import ThemeToggle from "../components/ThemeToggle";
+import CreatePost from "../components/CreatePost";
+import PostCard from "../components/PostCard";
 
 export default function HomePage() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchPosts = useCallback(async () => {
+    try {
+      const data = await getFeed();
+      setPosts(data.data);
+    } catch (error) {
+      console.error("Failed to fetch posts", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
   const handleLogout = async () => {
     await logout();
@@ -12,7 +33,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="app-container">
+    <div className="app-container" style={{ background: "var(--bg-primary)" }}>
       <header className="app-header glass">
         <Link to="/home" className="logo">
           <span className="logo-icon">◈</span>
@@ -32,31 +53,32 @@ export default function HomePage() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
-          gap: "16px",
-          padding: "20px",
-          textAlign: "center",
+          padding: "24px 20px",
+          width: "100%",
+          maxWidth: "1126px",
+          margin: "0 auto",
         }}
       >
-        <span style={{ fontSize: "64px" }}>👋</span>
-        <h1 style={{ fontSize: "32px", fontWeight: 800, letterSpacing: "-1px" }}>
-          Hey, <span className="gradient-text">{user?.fullName}</span>!
-        </h1>
-        <p style={{ color: "var(--text-muted)", fontSize: "18px" }}>
-          You're logged in as @{user?.username}
-        </p>
-        <div 
-          className="card" 
-          style={{ 
-            marginTop: "24px", 
-            maxWidth: "400px",
-            background: "var(--bg-elevated)" 
-          }}
-        >
-          <p style={{ color: "var(--text-muted)" }}>
-            The full feed and dashboard features are coming soon. For now, enjoy the 
-            brand new <strong>Bright Mode</strong>! ✨
-          </p>
+        {/* Post Creation Area */}
+        <CreatePost onPostCreated={fetchPosts} />
+
+        {/* Feed Area */}
+        <div style={{ width: "100%", maxWidth: "var(--max-content-width)" }}>
+          {loading ? (
+            <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
+              Loading your feed...
+            </div>
+          ) : posts.length > 0 ? (
+            posts.map((post) => <PostCard key={post._id} post={post} />)
+          ) : (
+            <div className="card" style={{ textAlign: "center", padding: "40px" }}>
+              <span style={{ fontSize: "40px", display: "block", marginBottom: "16px" }}>📭</span>
+              <h3>No posts yet</h3>
+              <p style={{ color: "var(--text-muted)", marginTop: "8px" }}>
+                Be the first one to share something with the world!
+              </p>
+            </div>
+          )}
         </div>
       </main>
     </div>

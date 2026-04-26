@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import { errorHandler } from "./middleware/errorHandler.js";
 import authRoutes from "./routes/auth.routes.js";
+import postRoutes from "./routes/postRoutes.js";
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(
 
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(express.static("public")); // serves images from public/temp
 app.use(cookieParser());
 app.use(morgan("dev")); // logs every request to the console
 
@@ -32,6 +34,7 @@ app.get("/api/health", (req, res) => {
 
 // Routes
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/posts", postRoutes);
 
 // Global error handler — must be the last middleware
 app.use(errorHandler);
