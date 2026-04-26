@@ -54,6 +54,11 @@
   font-size: 24px;
 }
 
+.stat-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
 .stat-info h3 {
   font-size: 1.5rem;
   font-weight: 800;
