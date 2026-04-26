@@ -11,16 +11,22 @@
   border-radius: var(--radius-xl);
   overflow: hidden;
   background: var(--bg-surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
 }
 
 .profile-cover {
   height: 200px;
   background: var(--auth-gradient);
-  opacity: 0.8;
+  position: relative;
 }
 
-.profile-info-section {
+.profile-content {
   padding: 0 40px 40px;
+}
+
+.profile-avatar-container {
+  height: 70px; /* Offset for half-avatar */
   position: relative;
 }
 
@@ -29,17 +35,17 @@
   height: 140px;
   border-radius: 50%;
   background: var(--bg-surface);
-  border: 6px solid var(--bg-surface);
+  border: 5px solid var(--bg-surface);
   position: absolute;
   top: -70px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 48px;
-  font-weight: 800;
+  font-size: 44px;
+  font-weight: 700;
   color: var(--accent);
   overflow: hidden;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 .profile-avatar-large img {
@@ -49,39 +55,39 @@
 }
 
 .profile-details {
-  margin-top: 80px;
+  margin-top: 20px;
 }
 
 .profile-header-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
+  align-items: flex-start;
+  margin-bottom: 8px;
 }
 
 .profile-name {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 800;
   color: var(--text);
 }
 
 .profile-username {
-  font-size: 16px;
+  font-size: 15px;
   color: var(--text-muted);
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .profile-bio {
   font-size: 16px;
   line-height: 1.6;
   color: var(--text);
-  margin-bottom: 30px;
+  margin-bottom: 32px;
   max-width: 600px;
 }
 
 .profile-stats {
   display: flex;
-  gap: 30px;
+  gap: 32px;
 }
 
 .stat {
@@ -92,34 +98,37 @@
 
 .stat strong {
   color: var(--text);
+  font-weight: 700;
 }
 
 .stat span {
   color: var(--text-muted);
 }
 
-/* --- Edit Form --- */
+/* --- Edit Mode --- */
 .profile-edit-form {
-  margin-top: 80px;
+  margin-top: 30px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
-.profile-edit-form .form-group {
+.form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.profile-edit-form label {
-  font-size: 14px;
-  font-weight: 600;
+.form-group label {
+  font-size: 13px;
+  font-weight: 700;
   color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.profile-edit-form input,
-.profile-edit-form textarea {
+.form-group input,
+.form-group textarea {
   background: var(--bg-primary);
   border: 1px solid var(--border);
   padding: 12px 16px;
@@ -131,43 +140,63 @@
   transition: var(--transition);
 }
 
-.profile-edit-form input:focus,
-.profile-edit-form textarea:focus {
+.form-group input:focus,
+.form-group textarea:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px var(--accent-glow);
 }
 
-.profile-edit-form textarea {
+.form-group textarea {
   min-height: 100px;
-  resize: vertical;
+  resize: none;
 }
 
 .edit-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 10px;
 }
 
-.success-message {
-  color: var(--success);
-  font-size: 14px;
-  margin-bottom: 16px;
-  font-weight: 600;
-}
-
-.btn-secondary {
-  padding: 8px 16px;
-  background: var(--bg-elevated);
+.btn-edit {
+  display: flex;
+  align-items: center;
+  padding: 8px 18px;
+  background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
   font-size: 14px;
   font-weight: 600;
   color: var(--text);
+  cursor: pointer;
   transition: var(--transition);
 }
 
-.btn-secondary:hover {
+.btn-edit:hover {
   background: var(--bg-hover);
   border-color: var(--text-faint);
+}
+
+.btn-save {
+  padding: 10px 24px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.success-message {
+  color: #10b981;
+  font-size: 14px;
+  margin-bottom: 16px;
+  font-weight: 600;
 }

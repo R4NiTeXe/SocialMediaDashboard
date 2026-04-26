@@ -7,12 +7,10 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 const createPost = asyncHandler(async (req, res) => {
   const { content } = req.body;
-
   if (!content || content.trim() === "") {
-    throw new ApiError(400, "Content is required to create a post");
+    throw new ApiError(400, "Content is required");
   }
 
-  // Get image path if file was uploaded
   let imagePath = "";
   if (req.file) {
     imagePath = `/temp/${req.file.filename}`;
@@ -24,157 +22,101 @@ const createPost = asyncHandler(async (req, res) => {
     owner: req.user._id,
   });
 
-  if (!post) {
-    throw new ApiError(500, "Something went wrong while creating the post");
-  }
+  const populatedPost = await Post.findById(post._id).populate("owner", "username fullName avatar");
 
-  return res
-    .status(201)
-    .json(new ApiResponse(201, post, "Post created successfully"));
+  return res.status(201).json(new ApiResponse(201, populatedPost, "Post created successfully"));
 });
 
 const getFeed = asyncHandler(async (req, res) => {
-  // Simple feed: get all posts, sorted by newest
   const posts = await Post.find()
     .populate("owner", "username fullName avatar")
     .populate("comments.owner", "username fullName avatar")
+    .populate("comments.replies.owner", "username fullName avatar")
     .sort({ createdAt: -1 });
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, posts, "Feed fetched successfully"));
+  return res.status(200).json(new ApiResponse(200, posts, "Feed fetched successfully"));
 });
 
 const deletePost = asyncHandler(async (req, res) => {
   const { postId } = req.params;
-
   const post = await Post.findById(postId);
-
-  if (!post) {
-    throw new ApiError(404, "Post not found");
+  
+  if (!post) throw new ApiError(404, "Post not found");
+  if (post.owner.toString() !== req.user._id.toString()) {
+    throw new ApiError(403, "Unauthorized");
   }
 
-  // Check if the user is the owner
-  if (post.owner.toString() !== req.user._id.toString()) {
-    throw new ApiError(403, "You are not authorized to delete this post");
+  if (post.image) {
+    const fullPath = path.join(process.cwd(), "public", post.image);
+    if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
   }
 
   await Post.findByIdAndDelete(postId);
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, {}, "Post deleted successfully"));
+  return res.status(200).json(new ApiResponse(200, {}, "Post deleted"));
 });
 
 const toggleLike = asyncHandler(async (req, res) => {
   const { postId } = req.params;
-  const userId = req.user._id;
-
   const post = await Post.findById(postId);
-  if (!post) {
-    throw new ApiError(404, "Post not found");
-  }
+  if (!post) throw new ApiError(404, "Post not found");
 
-  const isLiked = post.likes.includes(userId);
-
+  const isLiked = post.likes.includes(req.user._id);
   if (isLiked) {
-    // Unlike
-    post.likes = post.likes.filter((id) => id.toString() !== userId.toString());
+    post.likes = post.likes.filter((id) => id.toString() !== req.user._id.toString());
   } else {
-    // Like
-    post.likes.push(userId);
+    post.likes.push(req.user._id);
   }
 
   await post.save();
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, { isLiked: !isLiked }, "Post like toggled"));
+  return res.status(200).json(new ApiResponse(200, { isLiked: !isLiked }, "Toggled like"));
 });
 
 const addComment = asyncHandler(async (req, res) => {
   const { postId } = req.params;
   const { content } = req.body;
-
-  if (!content || content.trim() === "") {
-    throw new ApiError(400, "Comment content is required");
-  }
-
-  const post = await Post.findById(postId);
-  if (!post) {
-    throw new ApiError(404, "Post not found");
-  }
-
-  const newComment = {
-    content,
-    owner: req.user._id,
-  };
-
-  post.comments.push(newComment);
-  await post.save();
-
-  // Populate the owner of the new comment for the frontend
-  const updatedPost = await Post.findById(postId).populate("comments.owner", "username fullName avatar");
-  const addedComment = updatedPost.comments[updatedPost.comments.length - 1];
-
-  return res
-    .status(201)
-    .json(new ApiResponse(201, addedComment, "Comment added successfully"));
-});
-
-const toggleCommentLike = asyncHandler(async (req, res) => {
-  const { postId, commentId } = req.params;
-  const userId = req.user._id;
+  if (!content) throw new ApiError(400, "Content required");
 
   const post = await Post.findById(postId);
   if (!post) throw new ApiError(404, "Post not found");
 
-  const comment = post.comments.id(commentId);
-  if (!comment) throw new ApiError(404, "Comment not found");
+  post.comments.push({ content, owner: req.user._id });
+  await post.save();
 
-  const isLiked = comment.likes.includes(userId);
+  const updated = await Post.findById(postId).populate("comments.owner", "username fullName avatar");
+  return res.status(201).json(new ApiResponse(201, updated.comments[updated.comments.length - 1], "Comment added"));
+});
+
+const toggleCommentLike = asyncHandler(async (req, res) => {
+  const { postId, commentId } = req.params;
+  const post = await Post.findById(postId);
+  if (!post) throw new ApiError(404, "Post not found");
+
+  const comment = post.comments.id(commentId);
+  const isLiked = comment.likes.includes(req.user._id);
 
   if (isLiked) {
-    comment.likes = comment.likes.filter((id) => id.toString() !== userId.toString());
+    comment.likes = comment.likes.filter((id) => id.toString() !== req.user._id.toString());
   } else {
-    comment.likes.push(userId);
+    comment.likes.push(req.user._id);
   }
 
   await post.save();
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, { isLiked: !isLiked }, "Comment like toggled"));
+  return res.status(200).json(new ApiResponse(200, { isLiked: !isLiked }, "Toggled comment like"));
 });
 
 const addCommentReply = asyncHandler(async (req, res) => {
   const { postId, commentId } = req.params;
   const { content } = req.body;
-
-  if (!content) throw new ApiError(400, "Reply content is required");
-
   const post = await Post.findById(postId);
   if (!post) throw new ApiError(404, "Post not found");
 
   const comment = post.comments.id(commentId);
-  if (!comment) throw new ApiError(404, "Comment not found");
-
-  const reply = {
-    content,
-    owner: req.user._id,
-  };
-
-  comment.replies.push(reply);
+  comment.replies.push({ content, owner: req.user._id });
   await post.save();
 
-  // Populate to send back the full reply with user info
-  const updatedPost = await Post.findById(postId).populate("comments.replies.owner", "username fullName avatar");
-  const updatedComment = updatedPost.comments.id(commentId);
-  const newReply = updatedComment.replies[updatedComment.replies.length - 1];
-
-  return res
-    .status(201)
-    .json(new ApiResponse(201, newReply, "Reply added successfully"));
+  const updated = await Post.findById(postId).populate("comments.replies.owner", "username fullName avatar");
+  const commentRefreshed = updated.comments.id(commentId);
+  return res.status(201).json(new ApiResponse(201, commentRefreshed.replies[commentRefreshed.replies.length - 1], "Reply added"));
 });
 
 export { createPost, getFeed, deletePost, toggleLike, addComment, toggleCommentLike, addCommentReply };

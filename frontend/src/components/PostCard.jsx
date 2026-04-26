@@ -27,10 +27,8 @@ export default function PostCard({ post }) {
       setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
       await toggleLike(_id);
     } catch (error) {
-      // Revert on error
       setIsLiked(isLiked);
       setLikeCount(likeCount);
-      console.error("Like failed", error);
     }
   };
 
@@ -44,26 +42,21 @@ export default function PostCard({ post }) {
       setComments(prev => [...prev, response.data]);
       setNewComment("");
     } catch (error) {
-      console.error("Comment failed", error);
+      console.error(error);
     } finally {
       setSubmittingComment(false);
     }
   };
 
-  const handleShare = () => {
-    const postUrl = `${window.location.origin}/post/${_id}`;
-    navigator.clipboard.writeText(postUrl);
-    alert("Post link copied to clipboard!");
-  };
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this post?")) return;
     try {
       await deletePost(_id);
-      // We should ideally refresh the feed or remove from state
-      window.location.reload(); 
+      window.location.reload();
     } catch (error) {
-      console.error("Delete failed", error);
+      console.error(error);
+      setIsDeleting(false);
     }
   };
 
@@ -83,7 +76,7 @@ export default function PostCard({ post }) {
         return c;
       }));
     } catch (error) {
-      console.error("Comment like failed", error);
+      console.error(error);
     }
   };
 
@@ -97,7 +90,7 @@ export default function PostCard({ post }) {
         return c;
       }));
     } catch (error) {
-      console.error("Reply failed", error);
+      console.error(error);
     }
   };
 
@@ -113,15 +106,29 @@ export default function PostCard({ post }) {
             )}
           </div>
           <div className="post-meta">
-            <h4 className="post-author">{owner?.fullName || "Deleted User"}</h4>
+            <h4 className="post-author">{owner?.fullName || "User"}</h4>
             <span className="post-date">{date}</span>
           </div>
         </div>
         
         {user?._id === owner?._id && (
-          <button className="post-delete-btn" onClick={handleDelete} title="Delete Post">
-            🗑️
-          </button>
+          <div className="post-header-actions">
+            {!isDeleting ? (
+              <button className="post-delete-btn" onClick={() => setIsDeleting(true)}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+              </button>
+            ) : (
+              <div className="delete-confirm-group">
+                <button className="btn-cancel-small" onClick={() => setIsDeleting(false)}>Cancel</button>
+                <button className="btn-confirm-delete" onClick={handleDelete}>Delete</button>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
@@ -131,7 +138,7 @@ export default function PostCard({ post }) {
 
       {image && (
         <div className="post-image">
-          <img src={`http://localhost:5000${image}`} alt="Post media" />
+          <img src={`http://localhost:5000${image}`} alt="Post content" />
         </div>
       )}
 
@@ -140,16 +147,19 @@ export default function PostCard({ post }) {
           className={`post-action-btn ${isLiked ? "liked" : ""}`}
           onClick={handleLike}
         >
-          <span>{isLiked ? "❤️" : "🤍"}</span> {likeCount > 0 && likeCount} Like
+          <svg width="20" height="20" viewBox="0 0 24 24" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.84-8.84 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+          <span>{likeCount > 0 && likeCount} Like</span>
         </button>
         <button 
           className="post-action-btn"
           onClick={() => setShowComments(!showComments)}
         >
-          <span>💬</span> {comments.length > 0 && comments.length} Comment
-        </button>
-        <button className="post-action-btn" onClick={handleShare}>
-          <span>🔗</span> Share
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+          </svg>
+          <span>{comments.length > 0 && comments.length} Comment</span>
         </button>
       </div>
 
@@ -218,7 +228,10 @@ function CommentItem({ comment, onLike, onReply, currentUser }) {
           <p className="comment-content">{comment.content}</p>
           <div className="comment-actions">
             <button className={`comment-action ${isLiked ? "liked" : ""}`} onClick={onLike}>
-              {isLiked ? "❤️" : "🤍"} {comment.likes?.length || ""} Like
+              <svg width="12" height="12" viewBox="0 0 24 24" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}>
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.84-8.84 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+              {comment.likes?.length || ""} Like
             </button>
             <button className="comment-action" onClick={() => setShowReplyInput(!showReplyInput)}>
               Reply

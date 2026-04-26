@@ -3,14 +3,12 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
-// Cookie settings — httpOnly so JavaScript can't touch them (protects against XSS)
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict",
 };
 
-// Helper to generate both tokens and save the refresh token to the database
 const generateAndSaveTokens = async (userId) => {
   const user = await User.findById(userId);
   const accessToken = user.generateAccessToken();
@@ -22,46 +20,30 @@ const generateAndSaveTokens = async (userId) => {
   return { accessToken, refreshToken };
 };
 
-// POST /api/v1/auth/register
 const register = asyncHandler(async (req, res) => {
   const { username, email, password, fullName } = req.body;
 
   if (!username || !email || !password || !fullName) {
-    throw new ApiError(400, "Please fill in all the fields");
+    throw new ApiError(400, "All fields are required");
   }
 
-  // Make sure no one else has already taken this email or username
   const existingUser = await User.findOne({ $or: [{ email }, { username }] });
   if (existingUser) {
-    throw new ApiError(
-      409,
-      "An account with this email or username already exists"
-    );
+    throw new ApiError(409, "User already exists");
   }
 
   const user = await User.create({ username, email, password, fullName });
-
   const { accessToken, refreshToken } = await generateAndSaveTokens(user._id);
 
-  // Don't send the password or refresh token back to the client
-  const newUser = await User.findById(user._id).select(
-    "-password -refreshToken"
-  );
+  const newUser = await User.findById(user._id).select("-password -refreshToken");
 
   return res
     .status(201)
     .cookie("accessToken", accessToken, cookieOptions)
     .cookie("refreshToken", refreshToken, cookieOptions)
-    .json(
-      new ApiResponse(
-        201,
-        { user: newUser, accessToken },
-        "Welcome to SocialSphere!"
-      )
-    );
+    .json(new ApiResponse(201, { user: newUser, accessToken }, "Registration successful"));
 });
 
-// POST /api/v1/auth/login
 const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -70,76 +52,45 @@ const login = asyncHandler(async (req, res) => {
   }
 
   const user = await User.findOne({ email });
-  if (!user) {
-    throw new ApiError(401, "No account found with that email");
-  }
-
-  const isPasswordCorrect = await user.comparePassword(password);
-  if (!isPasswordCorrect) {
-    throw new ApiError(401, "Wrong password — please try again");
+  if (!user || !(await user.comparePassword(password))) {
+    throw new ApiError(401, "Invalid credentials");
   }
 
   const { accessToken, refreshToken } = await generateAndSaveTokens(user._id);
-
-  const loggedInUser = await User.findById(user._id).select(
-    "-password -refreshToken"
-  );
+  const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
   return res
     .status(200)
     .cookie("accessToken", accessToken, cookieOptions)
     .cookie("refreshToken", refreshToken, cookieOptions)
-    .json(
-      new ApiResponse(
-        200,
-        { user: loggedInUser, accessToken },
-        "Welcome back!"
-      )
-    );
+    .json(new ApiResponse(200, { user: loggedInUser, accessToken }, "Login successful"));
 });
 
-// POST /api/v1/auth/logout  (requires login)
 const logout = asyncHandler(async (req, res) => {
-  // Remove the refresh token from the database so the session is truly invalidated
-  await User.findByIdAndUpdate(req.user._id, {
-    $unset: { refreshToken: 1 },
-  });
+  await User.findByIdAndUpdate(req.user._id, { $unset: { refreshToken: 1 } });
 
   return res
     .status(200)
     .clearCookie("accessToken", cookieOptions)
     .clearCookie("refreshToken", cookieOptions)
-    .json(new ApiResponse(200, {}, "You have been logged out"));
+    .json(new ApiResponse(200, {}, "Logged out"));
 });
 
-// GET /api/v1/auth/me  (requires login)
 const getMe = asyncHandler(async (req, res) => {
-  return res
-    .status(200)
-    .json(new ApiResponse(200, req.user, "User profile fetched successfully"));
+  return res.status(200).json(new ApiResponse(200, req.user, "Profile fetched"));
 });
 
 const updateProfile = asyncHandler(async (req, res) => {
   const { fullName, bio } = req.body;
-
-  if (!fullName) {
-    throw new ApiError(400, "Full name is required");
-  }
+  if (!fullName) throw new ApiError(400, "Name required");
 
   const user = await User.findByIdAndUpdate(
     req.user._id,
-    {
-      $set: {
-        fullName,
-        bio: bio || "",
-      },
-    },
+    { $set: { fullName, bio: bio || "" } },
     { new: true }
   ).select("-password");
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, user, "Profile updated successfully"));
+  return res.status(200).json(new ApiResponse(200, user, "Profile updated"));
 });
 
 export { register, login, logout, getMe, updateProfile };

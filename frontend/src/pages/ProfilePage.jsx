@@ -32,15 +32,14 @@ export default function ProfilePage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage("");
     try {
       const response = await updateProfile(formData);
       setUser(response.data);
       setIsEditing(false);
-      setMessage("Profile updated successfully!");
+      setMessage("Profile updated successfully");
+      setTimeout(() => setMessage(""), 3000);
     } catch (error) {
-      console.error("Update failed", error);
-      setMessage("Failed to update profile.");
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -50,7 +49,13 @@ export default function ProfilePage() {
     <div className="app-container" style={{ background: "var(--bg-primary)" }}>
       <header className="app-header glass">
         <Link to="/home" className="logo">
-          <span className="logo-icon">◈</span>
+          <span className="logo-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+          </span>
           <span className="logo-text gradient-text">SocialSphere</span>
         </Link>
         <div className="header-actions">
@@ -62,36 +67,34 @@ export default function ProfilePage() {
       <main className="profile-main">
         <div className="profile-card glass">
           <div className="profile-cover"></div>
-          <div className="profile-info-section">
-            <div className="profile-avatar-large">
-              {user?.avatar ? (
-                <img src={user.avatar} alt={user.username} />
-              ) : (
-                <span>{user?.username?.charAt(0).toUpperCase()}</span>
-              )}
+          <div className="profile-content">
+            <div className="profile-avatar-container">
+              <div className="profile-avatar-large">
+                {user?.avatar ? (
+                  <img src={user.avatar} alt={user.username} />
+                ) : (
+                  <span>{user?.username?.charAt(0).toUpperCase()}</span>
+                )}
+              </div>
             </div>
             
             {!isEditing ? (
               <div className="profile-details">
                 <div className="profile-header-row">
                   <h1 className="profile-name">{user?.fullName}</h1>
-                  <button className="btn-secondary" onClick={() => setIsEditing(true)}>
+                  <button className="btn-edit" onClick={() => setIsEditing(true)}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path>
+                    </svg>
                     Edit Profile
                   </button>
                 </div>
                 <p className="profile-username">@{user?.username}</p>
-                <p className="profile-bio">{user?.bio || "No bio yet. Add one to let people know more about you!"}</p>
+                <p className="profile-bio">{user?.bio || "No bio yet"}</p>
                 
                 {message && <p className="success-message">{message}</p>}
                 
-                <div className="profile-stats">
-                  <div className="stat">
-                    <strong>0</strong> <span>Following</span>
-                  </div>
-                  <div className="stat">
-                    <strong>0</strong> <span>Followers</span>
-                  </div>
-                </div>
               </div>
             ) : (
               <form className="profile-edit-form" onSubmit={handleSubmit}>
@@ -106,7 +109,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Bio (max 160 characters)</label>
+                  <label>Bio</label>
                   <textarea
                     name="bio"
                     value={formData.bio}
@@ -115,10 +118,10 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="edit-actions">
-                  <button type="button" className="btn-ghost" onClick={() => setIsEditing(false)}>
+                  <button type="button" className="btn-cancel" onClick={() => setIsEditing(false)}>
                     Cancel
                   </button>
-                  <button type="submit" className="btn-primary" disabled={loading}>
+                  <button type="submit" className="btn-save" disabled={loading}>
                     {loading ? "Saving..." : "Save Changes"}
                   </button>
                 </div>

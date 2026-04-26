@@ -40,17 +40,16 @@
 }
 
 .brand-logo-icon {
-  font-size: 28px;
-  color: var(--accent-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
 }
 
 .brand-logo-text {
   font-size: 24px;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--accent-light), var(--accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #ffffff;
 }
 
 .brand-headline {

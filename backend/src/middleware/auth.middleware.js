@@ -3,7 +3,6 @@ import { User } from "../models/User.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
-// Protects routes — checks for a valid access token in cookies or the Authorization header
 const verifyJWT = asyncHandler(async (req, _, next) => {
   const token =
     req.cookies?.accessToken ||
