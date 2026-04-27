@@ -29,6 +29,7 @@ export default function HomePage() {
       <Header />
 
       <main className="app-main">
+        <h1 className="sr-only">SocialSphere Home Feed</h1>
         <div className="feed-container">
           <CreatePost onPostCreated={loadPosts} />
           
